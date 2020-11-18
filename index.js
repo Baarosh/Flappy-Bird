@@ -1,25 +1,16 @@
 const gameBoard = document.querySelector('.sky')
 const bird = document.querySelector('.bird')
-let birdBottom
-let birdLeft
-const gravity = 2
-const jumping = 10
-const jumpHigh = 100
-let gravityIntervalId
-let jumpIntervalId
-let isJumping = false
-let isKeyDown = false
-const obstacles = []
 
 class Obstacle {
     constructor() {
         this.upOrDown = Math.floor(Math.random() * 2)
         this.height = 400 - (Math.random() * 150)
-        console.log(this.height)
         this.visual = document.createElement('div')
+        this.left = 1000
+
         this.visual.classList.add('obstacle')
         this.visual.style.width = '70px'
-        this.visual.style.left = '1000px'
+        this.visual.style.left = `${this.left}px`
         this.visual.style.height = `${this.height}px`
 
         if(this.upOrDown === 0) this.visual.style.top = 0
@@ -28,6 +19,21 @@ class Obstacle {
         gameBoard.appendChild(this.visual)
     }
 }
+
+let birdBottom
+let birdLeft
+const gravity = 2
+const jumping = 5
+const jumpHigh = 100
+let gravityIntervalId
+let jumpIntervalId
+let isJumping = false
+let isKeyDown = false
+const obstacles = [new Obstacle()]
+let obstacleIntervalId
+const obstaclesSpeed = 4
+
+
 
 const startGravity = () => {
     gravityIntervalId = setInterval(() => {
@@ -63,6 +69,57 @@ const jump = () => {
     startGravity()
 }
 
+const createObstacles = () => {
+    obstacleIntervalId = setInterval(() => {
+        if(birdBottom > 0) {
+
+            obstacles.forEach((ob) => {
+                if (ob.left === 500) {
+                    const obs = new Obstacle()
+                    obstacles.push(obs)
+                }
+
+                if (ob.left < -30) {
+                    ob.visual.classList.remove('obstacle')
+                    // obstacles.shift()
+
+                } else {
+                    ob.left -= obstaclesSpeed
+                    ob.visual.style.left = `${ob.left}px`
+
+                    if((ob.left >= 50)
+                    && (ob.left <= 120)
+                    && ((ob.upOrDown === 0 && birdBottom >= ob.height - 50)
+                    || (ob.upOrDown === 1 && birdBottom <= ob.height))
+                    ) {
+                        clearInterval(obstacleIntervalId)
+                        removeListeners()
+                    }
+                }
+            })
+        }
+        else {
+            clearInterval(obstacleIntervalId)
+            removeListeners()
+        }
+    }, 10)
+}
+
+const removeListeners = () => {
+    document.removeEventListener('keydown', controlUp)
+    document.removeEventListener('keyup', controlDown)
+}
+
+const controlUp = (e) => {
+    if(!isKeyDown && e.key === "ArrowUp") {
+        isKeyDown = true
+        jump()
+    }
+}
+
+const controlDown = (e) => {
+    if (e.key === "ArrowUp") isKeyDown = false
+}
 
 const startGame = () => {
     bird.style.left = '50px'
@@ -71,19 +128,10 @@ const startGame = () => {
     birdBottom = 320
 
     startGravity()
+    createObstacles()
 
-
-
-    document.addEventListener('keydown', (e) => {
-        if(!isKeyDown && e.key === "ArrowUp") {
-            isKeyDown = true
-            jump()
-        }
-    })
-    document.addEventListener('keyup', (e) => {
-        if (e.key === "ArrowUp") isKeyDown = false
-
-    })
+    document.addEventListener('keydown',controlUp)
+    document.addEventListener('keyup', controlDown)
 }
 
 startGame()
