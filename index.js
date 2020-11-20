@@ -1,8 +1,20 @@
 const gameBoard = document.querySelector('.sky')
 
 class Obstacle {
-    constructor() {
+    constructor(width, height) {
+        this.width = width
+        this.height = height
+        this.bottom = 0
+        this.left = screenWidth
 
+        this.visual = document.createElement('div')
+        this.visual.classList.add('obstacle')
+        this.visual.style.width = `${this.width}px`
+        this.visual.style.height = `${this.height}px`
+        this.visual.style.bottom = `${this.bottom}px`
+        this.visual.style.left = `${this.left}px`
+
+        gameBoard.appendChild(this.visual)
     }
 }
 class Bird {
@@ -25,9 +37,17 @@ class Bird {
 
 const [screenWidth, screenHeight] = [1000, 650]
 const [birdWidth, birdHeight] = [50, 50]
+const [obstacleWidth, obstacleHeight] = [50, 200]
+const intervalSpeed = 100
+const fallingSpeed = 5
+const jumpingSpeed = 20
+const movingSpeed = 10
+const jumpingHeight = 100
+const obstacles = []
 
 let fallingId
 let jumpingId
+let movingId
 
 let canJump = false
 let isJumping = false
@@ -35,7 +55,7 @@ let isJumping = false
 const falling = () => {
     fallingId = setInterval(() => {
         if(bird.bottom > 0) {
-            bird.bottom -= 5
+            bird.bottom -= fallingSpeed
             bird.visual.style.bottom = `${bird.bottom}px`
         }
         else {
@@ -43,28 +63,39 @@ const falling = () => {
             document.removeEventListener('keydown', listenerKeyDown)
             document.removeEventListener('keyup', listenerKeyUp)
         }
-    },50)
+    },intervalSpeed)
 }
 
 const jumping = () => {
     clearInterval(fallingId)
     const currentHeight = bird.bottom + bird.height
     jumpingId = setInterval(() => {
-        if (currentHeight+100 > bird.bottom + bird.height) {
-            bird.bottom += 20
+        if (currentHeight + jumpingHeight > bird.bottom + bird.height) {
+            bird.bottom += jumpingSpeed
             bird.visual.style.bottom = `${bird.bottom}px`
         }
         else {
             clearInterval(jumpingId)
             falling()
         }
-    },50)
+    },intervalSpeed)
 }
 
-const createObstacles = () => {
-}
+const createAndMoveObstacles = () => {
+    const newObstacle = new Obstacle(obstacleWidth, obstacleHeight)
+    obstacles.push(newObstacle)
 
-const removeListeners = () => {
+    movingId = setInterval(() => {
+        if(bird.bottom > 0) {
+            obstacles.forEach((obst) => {
+                obst.left -= movingSpeed
+                obst.visual.style.left = `${obst.left}px`
+
+
+            })
+        }
+    },intervalSpeed)
+
 }
 
 const listenerKeyDown = (e) => {
@@ -83,6 +114,7 @@ const listenerKeyUp = (e) => {
 
 const startGame = () => {
     falling()
+    createAndMoveObstacles()
 
     document.addEventListener('keydown', listenerKeyDown)
     document.addEventListener('keyup', listenerKeyUp)
