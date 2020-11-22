@@ -1,16 +1,17 @@
 const gameBoard = document.querySelector('.sky')
 
 class Obstacle {
-    constructor(direction) {
+    constructor(direction, height) {
         if (direction === 'down') {
             this.bottom = 0
+            this.height = height
         }
         else if(direction === 'up') {
-            this.bottom = obstacleHeight + obstacleGap
+            this.bottom = height + obstacleGap
+            this.height = screenHeight - this.bottom
         }
         this.direction = direction
         this.width = obstacleWidth
-        this.height = obstacleHeight
         this.left = screenWidth
         this.active = true
 
@@ -44,14 +45,15 @@ class Bird {
 
 const [screenWidth, screenHeight] = [1000, 650]
 const [birdWidth, birdHeight] = [50, 50]
-const [obstacleWidth, obstacleHeight, obstacleGap] = [50, 200, 250]
+const obstacleGap = 250
+const obstacleWidth = 50
 const intervalSpeed = 30
 const fallingSpeed = 5
 const jumpingSpeed = 10
 const movingSpeed = 7
 const jumpingHeight = 100
 const obstacles = []
-const creatingDistance = 800
+const creatingDistance = 700
 
 let fallingId
 let jumpingId
@@ -101,8 +103,9 @@ const jumping = () => {
 }
 
 const createAndMoveObstacles = () => {
-    const newObstacleDown = new Obstacle('down')
-    const newObstacleUp = new Obstacle('up')
+    const height = Math.random() * 400
+    const newObstacleDown = new Obstacle('down', height)
+    const newObstacleUp = new Obstacle('up', height)
     obstacles.push(newObstacleDown)
     obstacles.push(newObstacleUp)
 
@@ -133,8 +136,10 @@ const createAndMoveObstacles = () => {
                 if(index === obArray.length - 1
                     &&  obst.left < creatingDistance + movingSpeed
                     &&  obst.left > creatingDistance - movingSpeed) {
-                        const newObstacleDown = new Obstacle('down')
-                        const newObstacleUp = new Obstacle('up')
+                        const height = Math.random() * 400
+
+                        const newObstacleDown = new Obstacle('down', height)
+                        const newObstacleUp = new Obstacle('up', height)
                         obstacles.push(newObstacleDown)
                         obstacles.push(newObstacleUp)
                 }
