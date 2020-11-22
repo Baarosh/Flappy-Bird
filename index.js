@@ -144,7 +144,8 @@ const createAndMoveObstacles = () => {
                         obstacles.push(newObstacleUp)
                 }
 
-                if(obst.left + obst.width < bird.left && obst.active) {
+                if(obst.left + obst.width < bird.left && obst.active
+                     && obst.direction == 'up') {
                     score++
                     obst.active = false
                 }

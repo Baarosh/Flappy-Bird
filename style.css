@@ -52,9 +52,9 @@ body {
 .bird {
     position: absolute;
     background-color: yellow;
-    /* background-image: url('/testphoto.png'); */
-    /* background-size: cover; */
-    /* background-position: center; */
+    /* background-image: url('/testphoto.png');
+    background-size: cover;
+    background-position: bottom; */
 }
 
 .obstacle {
