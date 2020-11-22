@@ -1,11 +1,18 @@
 const gameBoard = document.querySelector('.sky')
 
 class Obstacle {
-    constructor(width, height) {
-        this.width = width
-        this.height = height
-        this.bottom = 0
+    constructor(direction) {
+        if (direction === 'down') {
+            this.bottom = 0
+        }
+        else if(direction === 'up') {
+            this.bottom = obstacleHeight + obstacleGap
+        }
+        this.direction = direction
+        this.width = obstacleWidth
+        this.height = obstacleHeight
         this.left = screenWidth
+        this.active = true
 
         this.visual = document.createElement('div')
         this.visual.classList.add('obstacle')
@@ -15,8 +22,6 @@ class Obstacle {
         this.visual.style.left = `${this.left}px`
 
         gameBoard.appendChild(this.visual)
-
-        this.active = true
     }
 }
 class Bird {
@@ -39,7 +44,7 @@ class Bird {
 
 const [screenWidth, screenHeight] = [1000, 650]
 const [birdWidth, birdHeight] = [50, 50]
-const [obstacleWidth, obstacleHeight] = [50, 200]
+const [obstacleWidth, obstacleHeight, obstacleGap] = [50, 200, 250]
 const intervalSpeed = 30
 const fallingSpeed = 5
 const jumpingSpeed = 10
@@ -51,6 +56,7 @@ const creatingDistance = 800
 let fallingId
 let jumpingId
 let movingId
+let scoreShowingId
 
 let score = 0
 let canJump = false
@@ -67,6 +73,8 @@ const falling = () => {
             clearInterval(fallingId)
             document.removeEventListener('keydown', listenerKeyDown)
             document.removeEventListener('keyup', listenerKeyUp)
+
+            showScore()
         }
     },intervalSpeed)
 }
@@ -93,8 +101,10 @@ const jumping = () => {
 }
 
 const createAndMoveObstacles = () => {
-    const newObstacle = new Obstacle(obstacleWidth, obstacleHeight)
-    obstacles.push(newObstacle)
+    const newObstacleDown = new Obstacle('down')
+    const newObstacleUp = new Obstacle('up')
+    obstacles.push(newObstacleDown)
+    obstacles.push(newObstacleUp)
 
     movingId = setInterval(() => {
         if(bird.bottom > 0) {
@@ -103,25 +113,34 @@ const createAndMoveObstacles = () => {
                 obst.visual.style.left = `${obst.left}px`
 
                 if(
-                        bird.bottom <= obst.height
-                    &&  bird.left + bird.width >= obst.left
-                    &&  bird.left <= obst.left + obst.width
+                    ((     obst.direction === 'down'
+                        && bird.bottom <= obst.height)
+                    ||
+                    (      obst.direction === 'up'
+                        && bird.bottom + bird.height >= obst.bottom)
+                    )
+                    && bird.left + bird.width >= obst.left
+                    && bird.left <= obst.left + obst.width
                 ) {
                     clearInterval(movingId)
                     clearInterval(fallingId)
                     document.removeEventListener('keydown', listenerKeyDown)
                     document.removeEventListener('keyup', listenerKeyUp)
+
+                    showScore()
                 }
 
                 if(index === obArray.length - 1
                     &&  obst.left < creatingDistance + movingSpeed
                     &&  obst.left > creatingDistance - movingSpeed) {
-                        const newObstacle = new Obstacle(obstacleWidth, obstacleHeight)
-                        obstacles.push(newObstacle)
+                        const newObstacleDown = new Obstacle('down')
+                        const newObstacleUp = new Obstacle('up')
+                        obstacles.push(newObstacleDown)
+                        obstacles.push(newObstacleUp)
                 }
 
                 if(obst.left + obst.width < bird.left && obst.active) {
-                    console.log(++score)
+                    score++
                     obst.active = false
                 }
             })
@@ -144,6 +163,18 @@ const listenerKeyUp = (e) => {
     }
 }
 
+const showScore = () => {
+    scoreShowingId = setTimeout(() => {
+        const scoreDiv = document.createElement('div')
+        scoreDiv.classList.add('score-container')
+        const scoreText = document.createElement('p')
+        scoreText.classList.add('score')
+        scoreText.innerText = `Your score: ${score}`
+
+        scoreDiv.appendChild(scoreText)
+        gameBoard.appendChild(scoreDiv)
+    }, 400)
+}
 const startGame = () => {
     falling()
     createAndMoveObstacles()
